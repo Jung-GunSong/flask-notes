@@ -30,7 +30,7 @@ def redirect_home_page():
 def register_user():
     """Process the register form, adding a new user and goes to the user
     detail page"""
-
+    # TODO: if not logged in redirect to user page
     form = UserRegForm()
 
     if form.validate_on_submit():
@@ -41,7 +41,8 @@ def register_user():
         email = form.email.data
 
         user = User.register_user(username, password, first_name, last_name, email)
-
+        session["user_username"] = user.username
+        # TODO: shift session after db commit
         db.session.add(user)
         db.session.commit()
 
@@ -69,6 +70,7 @@ def login_user():
 
             db.session.add(user)
             db.session.commit()
+            # TODO: don't add user when logged in
 
             return redirect(f"/users/{username}")
 
@@ -77,18 +79,24 @@ def login_user():
 
 @app.get('/users/<username>')
 def view_user(username):
-
+    # TODO: start organizing routes with docstring
     user = User.query.get_or_404(username)
     form = CRSRFProtectForm()
 
-    return render_template("user_profile.html", user=user, form=form)
-
+    if "user_username" in session and session["user_username"] == user.username:
+    # TODO: start authorization logic at start of route, invert logic
+    # either fails authorization immediately or continue
+        return render_template("user_profile.html", user=user, form=form)
+    else:
+        # TODO: raise unauthorized
+        return redirect("/")
 @app.post('/logout')
 def logout_user():
-
+# TODO: start authorization logic at start of route, invert logic
     form = CRSRFProtectForm()
 
     if form.validate_on_submit():
         session.pop("user_username", None)
 
     return redirect("/")
+
