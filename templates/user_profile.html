@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-3">
+  <h3>{{ user.username }}</h3>
+
+  <ul>
+    <li>{{ user.first_name }}</li>
+    <li>{{ user.last_name }}</li>
+    <li>{{ user.email }}</li>
+  </ul>
+
+
+
+  {% if "user_username" in session %}
+  <form action="/logout" method="POST">
+    {{form.hidden_tag()}}
+    <button>Log Out</button>
+  </form>
+  {% endif %}
+</div>
+
+
+{% endblock %}

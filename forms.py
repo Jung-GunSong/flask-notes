@@ -17,3 +17,6 @@ class UserLoginForm(FlaskForm):
 
     username = StringField("Username", validators=[InputRequired()])
     password = StringField("Password", validators=[InputRequired()])
+
+class CRSRFProtectForm(FlaskForm):
+    """CRSRF protection"""

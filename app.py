@@ -1,8 +1,8 @@
 import os
 
-from flask import Flask, render_template, redirect, flash
+from flask import Flask, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
-from forms import UserRegForm, UserLoginForm
+from forms import UserRegForm, UserLoginForm, CRSRFProtectForm
 
 from models import connect_db, User, db
 
@@ -74,3 +74,21 @@ def login_user():
 
     else:
         return render_template('login_form.html', form=form)
+
+@app.get('/users/<username>')
+def view_user(username):
+
+    user = User.query.get_or_404(username)
+    form = CRSRFProtectForm()
+
+    return render_template("user_profile.html", user=user, form=form)
+
+@app.post('/logout')
+def logout_user():
+
+    form = CRSRFProtectForm()
+
+    if form.validate_on_submit():
+        session.pop("user_username", None)
+
+    return redirect("/")
