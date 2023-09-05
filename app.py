@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, redirect, flash
 from flask_debugtoolbar import DebugToolbarExtension
-from forms import UserRegForm
+from forms import UserRegForm, UserLoginForm
 
 from models import connect_db, User, db
 
@@ -25,8 +25,11 @@ def redirect_home_page():
 
     return redirect("/register")
 
-@app.get('/register')
-def show_register_user_form():
+
+@app.route("/register", methods=["GET", "POST"])
+def register_user():
+    """Process the register form, adding a new user and goes to the user
+    detail page"""
 
     form = UserRegForm()
 
@@ -37,32 +40,37 @@ def show_register_user_form():
         last_name = form.last_name.data
         email = form.email.data
 
+        user = User.register_user(username, password, first_name, last_name, email)
 
-
-@app.route("/add", methods=["GET", "POST"])
-def add_new_pet():
-    """Process the add form, adding a new pet and going back to home page"""
-
-    form = AddPetForm()
-
-    if form.validate_on_submit():
-        name = form.name.data
-        species = form.species.data
-        photo_url = form.photo_url.data
-        age = form.age.data
-        notes = form.notes.data
-        available = form.available.data
-
-        pet = Pet(name=name,
-                  species=species,
-                  photo_url=photo_url,
-                  age=age, notes=notes,
-                  available=available)
-
-        db.session.add(pet)
+        db.session.add(user)
         db.session.commit()
 
-        return redirect("/")
+        return redirect(f"/users/{username}")
 
     else:
-        return render_template('add_pet.html', form=form)
+        return render_template('register_user.html', form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login_user():
+    """Attemps to log a user in using input username + password"""
+
+    form = UserLoginForm()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+
+        user = User.authenticate_login(username, password)
+
+        if user:
+
+            session["user_username"] = user.username
+
+            db.session.add(user)
+            db.session.commit()
+
+            return redirect(f"/users/{username}")
+
+    else:
+        return render_template('login_form.html', form=form)
