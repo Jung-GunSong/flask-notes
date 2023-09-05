@@ -4,6 +4,9 @@
 
 {% block content %}
 
+{% for msg in get_flashed_messages() %}
+  <p style="color: red">{{ msg }}</p>
+{% endfor %}
 
 <div class="mt-3">
   <form action="/login" method="POST">
@@ -17,7 +20,7 @@
         {{ field }}
 
       {% for error in field.errors %}
-      {{ error }}
+        {{ error }}
       {% endfor %}
       </p>
       {% endfor %}

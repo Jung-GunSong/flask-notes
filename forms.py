@@ -1,24 +1,23 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, BooleanField, TextAreaField
-from wtforms.validators import InputRequired, Optional, URL, AnyOf
+from wtforms import StringField, SelectField, BooleanField, TextAreaField, PasswordField
+from wtforms.validators import InputRequired, Optional, URL, AnyOf, Length, Email
+
 
 class UserRegForm(FlaskForm):
     """Form for registering a user"""
-    # TODO: add validators that match constrainst of database
-    username = StringField("Username", validators=[InputRequired()])
-    password = StringField("Password", validators=[InputRequired()])
-    # TODO: use passwordfield instead of stringfield
-    first_name = StringField("First Name", validators=[InputRequired()])
-    last_name = StringField("Last Name", validators=[InputRequired()])
-    email = StringField("Email", validators=[InputRequired()])
-    # TODO: email validator to make sure its a email
+    username = StringField("Username", validators=[InputRequired(), Length(max=20)])
+    password = PasswordField("Password", validators=[InputRequired(), Length(max=100)])
+
+    first_name = StringField("First Name", validators=[InputRequired(), Length(max=30)])
+    last_name = StringField("Last Name", validators=[InputRequired(), Length(max=30)])
+    email = StringField("Email", validators=[InputRequired(), Email(), Length(max=50)])
 
 
 class UserLoginForm(FlaskForm):
-    """Form for registering a user"""
+    """Form for login for a user"""
 
-    username = StringField("Username", validators=[InputRequired()])
-    password = StringField("Password", validators=[InputRequired()])
+    username = StringField("Username", validators=[InputRequired(), Length(max=20)])
+    password = PasswordField("Password", validators=[InputRequired(), Length(max=100)])
 
 class CRSRFProtectForm(FlaskForm):
     """CRSRF protection"""

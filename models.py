@@ -38,9 +38,10 @@ class User(db.Model):
         db.String(30),
         nullable=False)
 
+    note = db.relationship('Note', backref='users')
+
     @classmethod
     def register_user(cls, username, password, first_name, last_name, email):
-        # TODO: make sure seperate args with new line
 
         hash = bcrypt.generate_password_hash(password).decode('utf8')
 
@@ -56,11 +57,37 @@ class User(db.Model):
 
     @classmethod
     def authenticate_login(cls, username, password):
-        # TODO: use User.query instead of cls
 
-        user = cls.query.filter_by(username=username).one()
+        user = cls.query.filter_by(username=username).one_or_none()
 
         if user and bcrypt.check_password_hash(user.password, password):
             return user
         else:
             return False
+
+
+class Note(db.Model):
+    """Note"""
+    __tablename__ = "notes"
+
+    id = db.Column(
+        db.String(20),
+        primary_key=True,
+        autoincrement=True
+    )
+
+    title = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    content = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    owner_username = db.Column(
+        db.String(30),
+        db.ForeignKey("user.username"),
+        nullable=False,
+    )

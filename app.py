@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import UserRegForm, UserLoginForm, CRSRFProtectForm
+from werkzeug.exceptions import Unauthorized
 
 from models import connect_db, User, db
 
@@ -19,6 +20,9 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 toolbar = DebugToolbarExtension(app)
 
+
+# TODO: start organizing routes with comments
+
 @app.get('/')
 def redirect_home_page():
     """Shows list of all pets"""
@@ -30,7 +34,7 @@ def redirect_home_page():
 def register_user():
     """Process the register form, adding a new user and goes to the user
     detail page"""
-    # TODO: if not logged in redirect to user page
+
     form = UserRegForm()
 
     if form.validate_on_submit():
@@ -41,10 +45,11 @@ def register_user():
         email = form.email.data
 
         user = User.register_user(username, password, first_name, last_name, email)
-        session["user_username"] = user.username
-        # TODO: shift session after db commit
+
         db.session.add(user)
         db.session.commit()
+
+        session["user_username"] = user.username
 
         return redirect(f"/users/{username}")
 
@@ -65,38 +70,34 @@ def login_user():
         user = User.authenticate_login(username, password)
 
         if user:
-
             session["user_username"] = user.username
-
-            db.session.add(user)
-            db.session.commit()
-            # TODO: don't add user when logged in
-
             return redirect(f"/users/{username}")
 
-    else:
-        return render_template('login_form.html', form=form)
+        flash("Invalid Username/Password Combination Entered")
+
+    return render_template('login_form.html', form=form)
+
 
 @app.get('/users/<username>')
 def view_user(username):
-    # TODO: start organizing routes with docstring
-    user = User.query.get_or_404(username)
-    form = CRSRFProtectForm()
 
-    if "user_username" in session and session["user_username"] == user.username:
-    # TODO: start authorization logic at start of route, invert logic
-    # either fails authorization immediately or continue
-        return render_template("user_profile.html", user=user, form=form)
-    else:
-        # TODO: raise unauthorized
-        return redirect("/")
+    user = User.query.get_or_404(username)
+
+    if not "user_username" in session or not session["user_username"] == user.username:
+        raise Unauthorized()
+        # return redirect("/")
+
+    form = CRSRFProtectForm()
+    return render_template("user_profile.html", user=user, form=form)
+
+
 @app.post('/logout')
 def logout_user():
-# TODO: start authorization logic at start of route, invert logic
+
     form = CRSRFProtectForm()
 
-    if form.validate_on_submit():
-        session.pop("user_username", None)
+    if not form.validate_on_submit():
+        raise Unauthorized()
 
+    session.pop("user_username", None)
     return redirect("/")
-
