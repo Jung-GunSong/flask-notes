@@ -10,6 +10,24 @@
     <li>{{ user.email }}</li>
   </ul>
 
+  {% for note in user.notes %}
+
+  <form action="/notes/{{ note.id }}/delete" method="POST">
+    <a href="/notes/{{ note.id }}">
+      <li>{{ note.title }}</li>
+    </a>
+    <button>Delete note</button>
+  </form>
+
+  {% endfor %}
+
+  <!-- <form action ="/users/{{ user.username }}/notes/add"method = "GET"  -->
+    <a href="/users/{{ user.username }}/notes/add">Add a Note</a>
+
+    <form action="/users/{{ user.username }}/delete" method = "POST">
+      <button>Delete User</button>
+    </form>
+
 
 
   {% if "user_username" in session %}

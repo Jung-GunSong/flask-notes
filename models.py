@@ -38,7 +38,7 @@ class User(db.Model):
         db.String(30),
         nullable=False)
 
-    note = db.relationship('Note', backref='users')
+    notes = db.relationship('Note', backref='users')
 
     @classmethod
     def register_user(cls, username, password, first_name, last_name, email):
@@ -71,7 +71,7 @@ class Note(db.Model):
     __tablename__ = "notes"
 
     id = db.Column(
-        db.String(20),
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
@@ -88,6 +88,6 @@ class Note(db.Model):
 
     owner_username = db.Column(
         db.String(30),
-        db.ForeignKey("user.username"),
+        db.ForeignKey("users.username"),
         nullable=False,
     )

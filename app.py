@@ -2,10 +2,10 @@ import os
 
 from flask import Flask, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
-from forms import UserRegForm, UserLoginForm, CRSRFProtectForm
+from forms import UserRegForm, UserLoginForm, CRSRFProtectForm, AddNoteForm
 from werkzeug.exceptions import Unauthorized
 
-from models import connect_db, User, db
+from models import connect_db, User, db, Note
 
 app = Flask(__name__)
 
@@ -101,3 +101,46 @@ def logout_user():
 
     session.pop("user_username", None)
     return redirect("/")
+
+@app.post('/users/<username>/delete')
+def delete_user(username):
+
+    user = User.query.get_or_404(username)
+
+    if not "user_username" in session or not session["user_username"] == user.username:
+        raise Unauthorized()
+
+    for note in user.notes:
+        db.session.delete(note)
+    db.session.commit()
+
+    db.session.delete(user)
+    db.session.commit()
+
+    session.pop("user_username", None)
+    return redirect("/")
+
+@app.route("/users/<username>/notes/add", methods=["GET", "POST"])
+def add_note(username):
+
+    user = User.query.get_or_404(username)
+
+    if not "user_username" in session or not session["user_username"] == user.username:
+        raise Unauthorized()
+
+    form = AddNoteForm()
+
+    if form.validate_on_submit():
+        title = form.title.data
+        content = form.content.data
+        owner_username = session["user_username"]
+
+        note = Note(title=title, content=content, owner_username = owner_username)
+
+        db.session.add(note)
+        db.session.commit()
+
+        return redirect(f"/users/{username}")
+
+    else:
+        return render_template('add_note.html', form=form, user=user)

@@ -21,3 +21,10 @@ class UserLoginForm(FlaskForm):
 
 class CRSRFProtectForm(FlaskForm):
     """CRSRF protection"""
+
+class AddNoteForm(FlaskForm):
+    """Form for login for a user"""
+
+    title = StringField("Title", validators=[InputRequired(), Length(max=100)])
+    content = TextAreaField("Content", validators=[InputRequired()])
+    # owner_username = PasswordField("Owner Username", validators=[InputRequired(), Length(max=30)])
